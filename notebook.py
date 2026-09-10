@@ -568,8 +568,84 @@ def model_heading(wandb_inference_card):
     return
 
 
+@app.cell
+def model_profiles():
+    # Author-recommended starting points, checked 2026-09-09.
+    # These are not a claim of optimal gridworld accuracy. Output budgets remain
+    # separate demo controls; a token-limit finish is not proof of repetition.
+    # W&B reasoning controls:
+    # https://docs.wandb.ai/inference/response-settings/reasoning
+    MODEL_CONFIGS = {
+        "google/gemma-4-31B-it": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "extra_body": {"top_k": 64},
+            "source": "https://huggingface.co/google/gemma-4-31B-it#best-practices",
+            "note": "Google recommends this sampling in both modes; replaces the original demo's greedy off-mode.",
+        },
+        "deepseek-ai/DeepSeek-V4-Flash-0731": {
+            "sampling": {"temperature": 1.0, "top_p": 1.0},
+            "agent_sampling": {"top_p": 0.95},
+            "source": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731#how-to-run-locally",
+            "note": "DeepSeek recommends top_p=0.95 for agents and 1.0 otherwise.",
+        },
+        "deepseek-ai/DeepSeek-V4-Pro-0813": {
+            "sampling": {"temperature": 1.0, "top_p": 1.0},
+            "agent_sampling": {"top_p": 0.95},
+            "source": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro-0813",
+            "note": "DeepSeek recommends top_p=0.95 for agents and 1.0 otherwise.",
+        },
+        "ibm-granite/granite-4.2-8b": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "source": "https://huggingface.co/ibm-granite/granite-4.2-8b#generation-parameters",
+            "note": "IBM explicitly recommends these settings for chat, reasoning, and tools.",
+        },
+        "MiniMaxAI/MiniMax-M3": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "reasoning_flag": "thinking_mode",
+            "reasoning_values": {True: "enabled", False: "disabled"},
+            "source": "https://huggingface.co/MiniMaxAI/MiniMax-M3#inference-parameters",
+            "template_source": "https://huggingface.co/MiniMaxAI/MiniMax-M3/blob/main/chat_template.jinja",
+            "note": "Use explicit template modes instead of the adaptive default; both modes checked on W&B.",
+        },
+        "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "agent_template": {"force_nonempty_content": True},
+            "source": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4#api-client",
+            "note": "NVIDIA recommends the same sampling in both modes, plus force_nonempty_content for coding agents.",
+        },
+        "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "agent_template": {"force_nonempty_content": True},
+            "source": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+            "note": "NVIDIA recommends the same sampling in both modes; the tool template flag also covers SGLang serving.",
+        },
+        "Qwen/Qwen3.8-27B": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95, "presence_penalty": 0.0},
+            "off_sampling": {"temperature": 0.7, "top_p": 0.8, "presence_penalty": 1.5},
+            "extra_body": {"top_k": 20, "min_p": 0.0, "repetition_penalty": 1.0},
+            "source": "https://huggingface.co/Qwen/Qwen3.8-27B#best-practices",
+            "note": "Qwen specifies separate thinking and instruct profiles, including presence_penalty.",
+        },
+        "Qwen/Qwen3.6-35B-A3B": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95, "presence_penalty": 1.5},
+            "off_sampling": {"temperature": 0.7, "top_p": 0.8, "presence_penalty": 1.5},
+            "agent_on_sampling": {"temperature": 0.6, "presence_penalty": 0.0},
+            "extra_body": {"top_k": 20, "min_p": 0.0, "repetition_penalty": 1.0},
+            "source": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B#best-practices",
+            "note": "Use Qwen's general thinking profile for planning and precise-coding profile for the agent.",
+        },
+        "zai-org/GLM-5.2": {
+            "sampling": {"temperature": 1.0, "top_p": 0.95},
+            "agent_sampling": {"top_p": 1.0},
+            "source": "https://huggingface.co/zai-org/GLM-5.2",
+            "note": "Starting points from Z.ai's reasoning and SWE evaluations; no separate off-mode recommendation is published.",
+        },
+    }
+    return (MODEL_CONFIGS,)
+
+
 @app.cell(hide_code=True)
-def model_catalog(API_KEY, ENTITY, PROJECT):
+def model_catalog(API_KEY, ENTITY, MODEL_CONFIGS, PROJECT):
     mo.stop(not API_KEY, mo.md("_Connect to W&B above to load models._"))
     inference_client = openai.OpenAI(
         base_url="https://api.inference.wandb.ai/v1",
@@ -578,12 +654,9 @@ def model_catalog(API_KEY, ENTITY, PROJECT):
         timeout=90.0,
         max_retries=0,
     )
-    # Curated for reasoning comparisons and the code agent (2026-09-09).
-    # Excludes deprecated models, reasoning-only models, and unreliable off-mode
-    # runs from MiniMax M3 and Nemotron 3.5 Lightning.
-    _demo_model_ids = ["google/gemma-4-31B-it","deepseek-ai/DeepSeek-V4-Flash-0731","deepseek-ai/DeepSeek-V4-Pro-0813","ibm-granite/granite-4.2-8b","nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B","Qwen/Qwen3.8-27B","Qwen/Qwen3.6-35B-A3B","zai-org/GLM-5.2"]
+    # The configured profiles are also the single source for the selector.
     try:
-        models_list = sorted({item.id for item in inference_client.models.list()} & set(_demo_model_ids))
+        models_list = sorted({item.id for item in inference_client.models.list()} & set(MODEL_CONFIGS))
     except openai.OpenAIError as _error:
         mo.stop(True, mo.callout(
             mo.md("Could not load the W&B model catalog. Check your connection and rerun this cell.\n\n"
@@ -715,36 +788,22 @@ def planner_prompts(WORLD, gen_env):
 
 
 @app.cell(hide_code=True)
-def reasoning_capabilities():
-    # W&B reasoning capabilities, checked 2026-09-09:
-    # https://docs.wandb.ai/inference/response-settings/reasoning
-    # DeepSeek V3.1 uses "thinking" in its official chat template; verified on W&B.
-    # GLM 5.3 Flash kept reasoning with all tested off flags; no off mode is documented.
-    THINKING_TOGGLE_MODELS = {
-        "google/gemma-4-31B-it",
-        "deepseek-ai/DeepSeek-V3.1",
-        "deepseek-ai/DeepSeek-V4-Flash", "deepseek-ai/DeepSeek-V4-Flash-0731",
-        "deepseek-ai/DeepSeek-V4-Pro", "deepseek-ai/DeepSeek-V4-Pro-0813",
-        "ibm-granite/granite-4.2-8b",
-        "MiniMaxAI/MiniMax-M3",
-        "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B",
-        "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
-        "Qwen/Qwen3.8-27B", "Qwen/Qwen3.6-35B-A3B",
-        "Qwen/Qwen3.6-27B", "Qwen/Qwen3.5-35B-A3B",
-        "zai-org/GLM-5.2",
-    }
+def reasoning_capabilities(MODEL_CONFIGS):
+    # All configured demo models support an explicit reasoning choice on W&B.
+    THINKING_TOGGLE_MODELS = set(MODEL_CONFIGS)
     THINKING_ALWAYS_ON_MODELS = {
         "moonshotai/Kimi-K2.7-Code", "moonshotai/Kimi-K2.6",
-        "openai/gpt-oss-120b", "openai/gpt-oss-20b",
-        "zai-org/GLM-5.3-Flash",
+        "openai/gpt-oss-120b", "openai/gpt-oss-20b", "zai-org/GLM-5.3-Flash",
     }
 
     def reasoning_options(model_name, thinking):
-        """Translate the shared UI toggle to this model's W&B request setting."""
-        if thinking is None or model_name not in THINKING_TOGGLE_MODELS:
+        """Translate the UI switch into the model's chat-template setting."""
+        if thinking is None:
             return {}
-        flag = "thinking" if model_name == "deepseek-ai/DeepSeek-V3.1" else "enable_thinking"
-        return {"chat_template_kwargs": {flag: bool(thinking)}}
+        config = MODEL_CONFIGS[model_name]
+        flag = config.get("reasoning_flag", "enable_thinking")
+        value = config.get("reasoning_values", {True: True, False: False})[bool(thinking)]
+        return {"chat_template_kwargs": {flag: value}}
 
 
     return THINKING_ALWAYS_ON_MODELS, THINKING_TOGGLE_MODELS, reasoning_options
@@ -780,8 +839,11 @@ def direct_controls(
 
 @app.cell(hide_code=True)
 def direct_controls_view(
+    MODEL_CONFIGS,
     ask_btn,
+    inference_options,
     llm_seed,
+    model_selector,
     reason_toggle,
     reasoning_note,
     think_budget,
@@ -792,12 +854,47 @@ def direct_controls_view(
         mo.md(reasoning_note),
         mo.md("The seed fixes the requested sampling seed; the hosted service may still vary."),
         mo.md("[W&B reasoning controls](https://docs.wandb.ai/inference/response-settings/reasoning)"),
+        mo.accordion({
+        "Active model settings": mo.vstack([
+            mo.md(MODEL_CONFIGS[model_selector.value]["note"]),
+            mo.md("[Model author's guidance](" + MODEL_CONFIGS[model_selector.value]["source"] + ")"),
+            mo.md("Settings are recommended starting points, not measured optima for this puzzle. Output budgets and seed are set separately."),
+            mo.md("```json\n" + json.dumps({
+                "direct": inference_options(model_selector.value, reason_toggle.value),
+                "agent": inference_options(model_selector.value, reason_toggle.value, task="agent"),
+            }, indent=2) + "\n```"),
+        ])
+    }),
     ])
     return
 
 
+@app.cell
+def inference_settings(MODEL_CONFIGS, reasoning_options):
+    # Both inference paths resolve their settings here, including reasoning mode.
+    def inference_options(model_name, thinking, *, task="direct"):
+        """Build fresh W&B kwargs from the selected model, mode, and task."""
+        if task not in {"direct", "agent"}:
+            raise ValueError(f"Unknown inference task: {task}")
+        if thinking is not True and thinking is not False:
+            raise ValueError("Choose reasoning on or off for the configured demo models.")
+        config = MODEL_CONFIGS[model_name]
+        sampling = dict(config["sampling"])
+        sampling.update(config.get("on_sampling" if thinking else "off_sampling", {}))
+        extra = dict(config.get("extra_body", {}))
+        extra.update(reasoning_options(model_name, thinking))
+        if task == "agent":
+            sampling.update(config.get("agent_sampling", {}))
+            sampling.update(config.get("agent_on_sampling" if thinking else "agent_off_sampling", {}))
+            extra["chat_template_kwargs"].update(config.get("agent_template", {}))
+        return {**sampling, "extra_body": extra}
+
+
+    return (inference_options,)
+
+
 @app.cell(hide_code=True)
-def direct_inference(inference_client, reasoning_options):
+def direct_inference(inference_client, inference_options):
     def response_panel(reasoning, answer, busy=False):
         def text_box(text):
             return mo.Html(
@@ -819,21 +916,12 @@ def direct_inference(inference_client, reasoning_options):
         started = time.monotonic()
         reasoning, answer = "", ""
         finish_reason, usage = None, None
-        extra = reasoning_options(model_name, thinking)
-        # Match the original FeatherLM Gemma sampling settings.
-        sampling = {"temperature": 0.0}
-        if model_name == "google/gemma-4-31B-it" and thinking is True:
-            sampling.update(temperature=1.0, top_p=0.95)
-            extra["top_k"] = 64
-        # NVIDIA's Ultra examples use these settings in both reasoning modes.
-        # https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16
-        if model_name == "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B":
-            sampling.update(temperature=1.0, top_p=0.95)
+        options = inference_options(model_name, thinking)
         with inference_client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": prompt}],
-            seed=seed, max_tokens=max_tokens, **sampling,
-            extra_body=extra, stream=True, stream_options={"include_usage": True},
+            seed=seed, max_tokens=max_tokens, **options,
+            stream=True, stream_options={"include_usage": True},
         ) as stream:
             for index, chunk in enumerate(stream):
                 if chunk.usage is not None:
@@ -850,6 +938,7 @@ def direct_inference(inference_client, reasoning_options):
         return {
             "model": model_name, "thinking": thinking, "reasoning": reasoning,
             "answer": answer, "finish_reason": finish_reason, "usage": usage,
+            "request_options": options,
             "seconds": round(time.monotonic() - started, 2),
         }
 
@@ -1054,27 +1143,16 @@ def agent_request(
     RUN_PYTHON_TOOL,
     THINKING_ALWAYS_ON_MODELS,
     inference_client,
-    reasoning_options,
+    inference_options,
 ):
     # 2. Make that tool available to the model through W&B Inference.
     def request_agent_stream(model_name, messages, thinking, seed):
-        extra = reasoning_options(model_name, thinking)
-        sampling = {"temperature": 0.0}
-        if thinking is True:
-            sampling.update(temperature=1.0 if model_name == "google/gemma-4-31B-it" else 0.6, top_p=0.95)
-            if model_name == "google/gemma-4-31B-it":
-                extra["top_k"] = 64
-
-        # NVIDIA's Ultra examples use these settings in both reasoning modes.
-        # https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16
-        if model_name == "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B":
-            sampling.update(temperature=1.0, top_p=0.95)
-
+        options = inference_options(model_name, thinking, task="agent")
         return inference_client.chat.completions.create(
             model=model_name, messages=messages, tools=[RUN_PYTHON_TOOL],
             tool_choice="auto", parallel_tool_calls=False,
             seed=seed, max_tokens=6144 if thinking is True or model_name in THINKING_ALWAYS_ON_MODELS else 4096,
-            **sampling, extra_body=extra, stream=True,
+            **options, stream=True,
             stream_options={"include_usage": True},
         )
 
@@ -1182,6 +1260,7 @@ def agent_inference(
     WORLD,
     build_planner_prompt,
     gen_env,
+    inference_options,
     request_agent_stream,
 ):
     AGENT_PROMPT = build_planner_prompt(gen_env) + """
@@ -1235,6 +1314,7 @@ def agent_inference(
         postprocess_inputs=lambda values: {
             "model": values["model_name"], "messages": values["messages"],
             "tools": [RUN_PYTHON_TOOL], "seed": values["seed"], "thinking": values["thinking"],
+            **inference_options(values["model_name"], values["thinking"], task="agent"),
         },
         postprocess_output=lambda result: result["completion"],
     )
