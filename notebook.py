@@ -17,6 +17,8 @@ import marimo
 __generated_with = "0.24.0"
 app = marimo.App(
     width="medium",
+    # Keep slide mode with the notebook when it is opened in molab.
+    layout_file="data:application/json;base64,eyJ0eXBlIjoic2xpZGVzIiwiZGF0YSI6e319",
     css_file="/usr/local/_marimo/custom.css",
     auto_download=["html"],
 )
@@ -60,6 +62,143 @@ def intro():
     """)
     return
 
+
+@app.cell(hide_code=True)
+def marimo_overview():
+    # Opening slide: approximately 45–60 seconds.
+    # Adapted from marimo-team/talks: 25-07-11-scipy (Python files and packaging)
+    # and 25-06-26-citi (one notebook, multiple ways to use it).
+    # Speaker notes: "marimo is an open-source Python notebook. The notebook
+    # itself is a Python file: review your prompts and tools in Git, automate
+    # work as a script, share an app, or present it as slides—like these.
+    # Package requirements live alongside the code. I'm running this in
+    # molab, our hosted notebook environment. Let's see what happens when we
+    # change the harness around an LLM."
+    mo.Html(r"""
+    <style>
+    .cw-marimo-overview[role="region"] {
+      box-sizing: border-box; container-type: inline-size;
+      width: 100%; max-width: 1440px; margin: 8px auto 16px; padding: 24px;
+      background: #fff; color: #202623; border: 1px solid #202623;
+      border-radius: 10px; box-shadow: -6px 6px 0 #56b5a7;
+      font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.4;
+    }
+    .cw-marimo-overview * {box-sizing: border-box;}
+    .cw-marimo-overview .cw-overview-brand {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .cw-marimo-overview .cw-overview-logo {width: 136px; height: 32px; object-fit: contain;}
+    .cw-marimo-overview .cw-overview-kicker {font-size: 13px; color: #53615b;}
+    .cw-marimo-overview h2 {
+      margin: 12px 0 18px; padding: 0; border: 0; color: #202623;
+      font-size: clamp(25px, 3.2cqw, 44px); line-height: 1.15; font-weight: 750;
+    }
+    .cw-marimo-overview .cw-overview-modes {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+    }
+    .cw-marimo-overview .cw-overview-mode {
+      padding: 12px; border: 1px solid #dce5df; border-radius: 7px; background: #f8fbf9;
+    }
+    .cw-marimo-overview .cw-overview-mode svg {
+      display: block; width: 24px; height: 24px; margin-bottom: 6px; color: #087e73;
+    }
+    .cw-marimo-overview .cw-overview-mode strong {display: block; font-size: 19px; font-weight: 700;}
+    .cw-marimo-overview .cw-overview-mode span {display: block; font-size: 13px; color: #53615b;}
+    .cw-marimo-overview .cw-overview-present {border-color: #087e73; background: #e8f6ef;}
+    .cw-marimo-overview .cw-overview-examples {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px;
+    }
+    .cw-marimo-overview .cw-overview-example {min-width: 0;}
+    .cw-marimo-overview h3 {margin: 0 0 3px; padding: 0; color: #202623; font-size: 16px; font-weight: 700;}
+    .cw-marimo-overview .cw-overview-caption {margin: 0 0 9px; color: #53615b; font-size: 12px;}
+    .cw-marimo-overview pre {
+      margin: 0; padding: 10px 12px; min-height: 120px;
+      border: 1px solid #dce5df; border-radius: 6px; background: #f8fbf9;
+      color: #34433b; font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre-wrap; overflow-wrap: anywhere; text-align: left;
+    }
+    .cw-marimo-overview .cw-overview-removed {display: block; color: #9d3137; background: #fff0f0;}
+    .cw-marimo-overview .cw-overview-added {display: block; color: #14653d; background: #dff3e6;}
+    .cw-marimo-overview .cw-overview-footer {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+      gap: 10px; border-top: 1px solid #dce5df; margin-top: 18px; padding-top: 12px;
+      font-size: 13px; color: #53615b;
+    }
+    .cw-marimo-overview a {color: #087e73; text-decoration: underline; text-underline-offset: 3px;}
+    .cw-marimo-overview a:focus-visible {outline: 2px solid #087e73; outline-offset: 4px;}
+    @container (min-width: 800px) {
+      .cw-marimo-overview .cw-overview-mode strong {font-size: 22px;}
+      .cw-marimo-overview .cw-overview-mode span,
+      .cw-marimo-overview .cw-overview-kicker,
+      .cw-marimo-overview .cw-overview-footer {font-size: 15px;}
+      .cw-marimo-overview h3 {font-size: 19px;}
+      .cw-marimo-overview .cw-overview-caption {font-size: 14px;}
+      .cw-marimo-overview pre {font-size: 14px; line-height: 1.5;}
+    }
+    @container (min-width: 1200px) {
+      .cw-marimo-overview .cw-overview-logo {width: 176px; height: 40px;}
+      .cw-marimo-overview .cw-overview-mode strong {font-size: 26px;}
+      .cw-marimo-overview .cw-overview-mode span {font-size: 20px;}
+      .cw-marimo-overview .cw-overview-kicker,
+      .cw-marimo-overview .cw-overview-footer {font-size: 18px;}
+      .cw-marimo-overview h3 {font-size: 23px;}
+      .cw-marimo-overview .cw-overview-caption {font-size: 17px;}
+      .cw-marimo-overview pre {font-size: 18px; line-height: 1.45;}
+    }
+    @container (max-width: 560px) {
+      .cw-marimo-overview .cw-overview-modes {grid-template-columns: repeat(2, minmax(0, 1fr));}
+      .cw-marimo-overview .cw-overview-examples {grid-template-columns: 1fr;}
+    }
+    </style>
+    <div class="cw-marimo-overview" role="region" aria-label="Introducing marimo">
+      <div class="cw-overview-brand">
+        <img class="cw-overview-logo" src="https://marimo.io/logotype-wide.svg" alt="marimo" width="136" height="32">
+        <span class="cw-overview-kicker">An open-source Python notebook</span>
+      </div>
+      <h2>One Python file. Four ways to use it.</h2>
+      <div class="cw-overview-modes">
+        <div class="cw-overview-mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M11 8h6M11 12h6M11 16h4"/></svg>
+          <strong>Notebook</strong><span>Explore an idea</span>
+        </div>
+        <div class="cw-overview-mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/></svg>
+          <strong>Script</strong><span>Automate the work</span>
+        </div>
+        <div class="cw-overview-mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h1M10 6.5h1M7 13h4v4H7zM14 13h3M14 17h3"/></svg>
+          <strong>App</strong><span>Share with your team</span>
+        </div>
+        <div class="cw-overview-mode cw-overview-present">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3h18M5 3v12h14V3M12 15v6M8 21l4-3 4 3M8 11l3-3 3 2 3-4"/></svg>
+          <strong>Slides</strong><span>Present the story</span>
+        </div>
+      </div>
+      <div class="cw-overview-examples">
+        <div class="cw-overview-example">
+          <h3>Review the harness in Git</h3>
+          <p class="cw-overview-caption">Example: add retries to the agent loop.</p>
+          <pre aria-label="Example Python diff: one attempt becomes an agent loop"><span class="cw-overview-removed">- max_turns = 1</span><span class="cw-overview-added">+ max_turns = 6 if close_loop else 1</span>  for turn in range(max_turns):
+      ...</pre>
+        </div>
+        <div class="cw-overview-example">
+          <h3>Bring your package requirements</h3>
+          <p class="cw-overview-caption">From this notebook's Python header (excerpt).</p>
+          <pre aria-label="Inline package requirements"># /// script
+# dependencies = [
+#   "wanderland==0.1.2",
+#   "wandb[sandbox]==0.27.0",
+# ]
+# ///</pre>
+        </div>
+      </div>
+      <div class="cw-overview-footer">
+        <span>These slides are a marimo notebook.</span>
+        <a href="https://molab.marimo.io/github/ktaletsk/coreweave-hacks-demo/blob/main/notebook.py" target="_blank" rel="noopener noreferrer">Open in molab · run in the cloud ↗</a>
+      </div>
+    </div>
+    """)
+    return
 
 @app.cell(hide_code=True)
 def marimo_widgets_feature():
