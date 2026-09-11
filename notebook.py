@@ -1,6 +1,8 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
+#     "altair==6.2.2",
+#     "pandas==3.0.5",
 #     "cwsandbox==0.24.0",
 #     "marimo>=0.23.8",
 #     "openai==2.46.0",
@@ -1599,6 +1601,226 @@ def agent_attempt(
         ])
     mo.vstack(_parts)
     return
+
+
+@app.cell(hide_code=True)
+def evaluation_intro():
+    mo.md("""
+    ## Act 4 · Let the numbers settle it
+
+    As the world grows, does each approach hold up? Compare the original four
+    approaches: **plan without thinking**, **plan with thinking**, **write code**,
+    and **code + verifier feedback**.
+
+    These are the **recorded results from the original Can LLMs Plan experiment**,
+    now stored in W&B Tables. They used local Gemma inference; the timings below
+    do not measure today's W&B Inference or CoreWeave Sandboxes.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def evaluation_source():
+    import wandb
+    import pandas as pd
+    import altair as alt
+
+    # Pinned artifact version: the source data cannot silently change mid-demo.
+    EVALUATION_ARTIFACT = "wandb/servless-sandbox-tutorial/can-llms-plan-original-results:v0"
+    EVALUATION_RUN_URL = "https://wandb.ai/wandb/servless-sandbox-tutorial/runs/planning-import-be5cf953b11f"
+    EVALUATION_METHODS = {
+        "plan_nothink": "plan · no-think", "plan_think": "plan · think",
+        "code": "write code", "code_fb": "code + verifier",
+    }
+    EVALUATION_COLORS = ["#d4564a", "#e0912f", "#2a9d4a", "#14532d"]
+
+    def load_evaluation(api_key, artifact_ref):
+        artifact = wandb.Api(api_key=api_key, timeout=30).artifact(artifact_ref)
+        table = artifact.get("planning_results")
+        return pd.DataFrame(table.data, columns=table.columns)
+
+    def evaluation_world(record):
+        # Replay the recorded map, not a regenerated map whose implementation may change.
+        world = json.loads(record["world_json"])
+
+        def object_from_dict(value):
+            contents = value.get("contains")
+            return bp.Obj(
+                value["type"], color=value.get("color"), state=value.get("state"),
+                contains=object_from_dict(contents) if isinstance(contents, dict) else None,
+                blocking=value.get("blocking", True),
+            )
+
+        objects = {tuple(obj["pos"]): object_from_dict(obj) for obj in world["objects"]}
+        kinds = {obj.type for obj in objects.values()}
+        actions = ["move_forward", "turn_left", "turn_right"]
+        if "gem" in kinds:
+            actions.append("collect_gem")
+        if "key" in kinds:
+            actions.append("pickup")
+        if "door" in kinds:
+            actions.append("toggle")
+        return bp.Puzzle(
+            name="Recorded Wildlands", cols=world["cols"], rows=world["rows"],
+            start=tuple(world["start"]), goal=tuple(world["goal"]),
+            heading="NESW"[world["heading"]] if isinstance(world["heading"], int) else world["heading"],
+            actions=tuple(actions), objects=objects,
+            walls=[tuple(p) for p in world["walls"]],
+            gaps=[tuple(p) for p in world["water"]],
+            lava=[tuple(p) for p in world["lava"]],
+        )
+    return alt, EVALUATION_ARTIFACT, EVALUATION_RUN_URL, EVALUATION_METHODS, EVALUATION_COLORS, load_evaluation, evaluation_world
+
+
+@app.cell(hide_code=True)
+def evaluation_load(API_KEY, EVALUATION_ARTIFACT, EVALUATION_RUN_URL, load_evaluation):
+    mo.stop(not API_KEY, mo.md("_Connect W&B above to load the recorded results._"))
+    try:
+        evaluation_df = load_evaluation(API_KEY, EVALUATION_ARTIFACT)
+    except Exception as _error:
+        mo.stop(True, mo.callout(mo.md(
+            "Could not load the W&B results Table. Check your connection and access, then rerun this cell.\n\n"
+            + html.escape(str(_error).replace(API_KEY, "[redacted]"))
+        ), kind="warn"))
+    mo.stop(evaluation_df.empty, mo.md("_This results Table is empty._"))
+    _errors = int(evaluation_df.harness_error.fillna("").str.strip().ne("").sum())
+    _models = ", ".join(evaluation_df.model_id.unique())
+    mo.md(
+        f"📊 **{len(evaluation_df)} recorded runs** · {_errors} harness errors · `{_models}` · "
+        f"{evaluation_df.method_label.nunique()} approaches · grids "
+        f"{int(evaluation_df.cols.min())}×{int(evaluation_df.rows.min())} to "
+        f"{int(evaluation_df.cols.max())}×{int(evaluation_df.rows.max())}.\n\n"
+        f"[Open results in W&B Tables]({EVALUATION_RUN_URL}) · "
+        "[Tables documentation](https://docs.wandb.ai/models/tables)\n\n"
+        "Three world seeds were used; some grid/approach combinations have fewer records. "
+        "Hover over a chart point for its sample count."
+    )
+    return (evaluation_df,)
+
+
+@app.cell(hide_code=True)
+def evaluation_chart(evaluation_df, EVALUATION_METHODS, EVALUATION_COLORS, alt):
+    _aggregate = evaluation_df.groupby(["method_label", "cols", "rows"]).agg(
+        success=("solved", "mean"), wall=("wall_time_s", "median"),
+        tokens=("output_tokens", "median"), n=("solved", "size"),
+    ).reset_index()
+    _aggregate["approach"] = _aggregate.method_label.map(EVALUATION_METHODS)
+    _domain = list(EVALUATION_METHODS.values())
+    _base = alt.Chart(_aggregate).encode(
+        x=alt.X("cols:Q", title="grid size (n × n)", scale=alt.Scale(nice=False)),
+        color=alt.Color("approach:N", scale=alt.Scale(domain=_domain, range=EVALUATION_COLORS), legend=None),
+        tooltip=[
+            alt.Tooltip("approach:N", title="approach"), alt.Tooltip("cols:Q", title="grid size"),
+            alt.Tooltip("success:Q", title="solved", format=".0%"),
+            alt.Tooltip("wall:Q", title="median seconds", format=".1f"),
+            alt.Tooltip("tokens:Q", title="median tokens", format=",.0f"),
+            alt.Tooltip("n:Q", title="recorded runs"),
+        ],
+    ).mark_line(point=alt.OverlayMarkDef(size=65, filled=True), strokeWidth=3)
+    _success = _base.encode(y=alt.Y("success:Q", title="fraction solved", scale=alt.Scale(domain=[0, 1]))).properties(
+        title="Success (higher is better)", width=290, height=245)
+    _cost = _base.encode(y=alt.Y("wall:Q", title="median wall-time (s)")).properties(
+        title="Cost (lower is better)", width=290, height=245)
+    _legend = "".join(
+        f'<span style="display:inline-flex;align-items:center;gap:6px;margin:0 10px">'
+        f'<span style="width:11px;height:11px;border-radius:50%;background:{color};display:inline-block"></span>{label}</span>'
+        for label, color in zip(_domain, EVALUATION_COLORS)
+    )
+    mo.vstack([
+        mo.md("**Success and compute cost vs. grid size, by planning strategy**"),
+        mo.Html(f'<div style="display:flex;justify-content:center;flex-wrap:wrap;font-size:13px">{_legend}</div>'),
+        mo.center(mo.ui.altair_chart(alt.hconcat(_success, _cost), chart_selection=False, legend_selection=False)),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def evaluation_summary(evaluation_df, EVALUATION_METHODS):
+    _code_tokens = evaluation_df[evaluation_df.method_label == "code"].output_tokens.median()
+    _rows = []
+    for _method, _label in EVALUATION_METHODS.items():
+        _group = evaluation_df[evaluation_df.method_label == _method]
+        if _group.empty:
+            continue
+        _tokens = _group.output_tokens.median()
+        _ratio = f"{_tokens / _code_tokens:.1f}×" if _code_tokens > 0 else "—"
+        _rows.append(
+            f"| **{_label}** | {len(_group)} | {_group.solved.mean():.0%} | "
+            f"{_group.wall_time_s.median():.1f} s | {_tokens:,.0f} | {_ratio} |"
+        )
+    mo.md(
+        "**What each approach costs.** Accuracy alongside the computation it took.\n\n"
+        "| Approach | Runs | Solved | Median time | Median tokens | Tokens vs. code |\n"
+        "|---|--:|--:|--:|--:|--:|\n" + "\n".join(_rows)
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def evaluation_pick(evaluation_df, EVALUATION_METHODS):
+    _records = evaluation_df.sort_values(["cols", "method_label", "world_seed"]).to_dict("records")
+    _options = {
+        f"{EVALUATION_METHODS[row['method_label']]} · {row['cols']}×{row['rows']} · "
+        f"seed {row['world_seed']} · {'solved' if row['solved'] else 'failed'}": row["run_id"]
+        for row in _records
+    }
+    evaluation_pick = mo.ui.dropdown(options=_options, value=None, label="Inspect a recorded run", full_width=True)
+    mo.accordion({"🔍 Replay a recorded result in Mo's world": evaluation_pick})
+    return (evaluation_pick,)
+
+
+@app.cell(hide_code=True)
+def evaluation_replay(evaluation_df, evaluation_pick, evaluation_world, EVALUATION_METHODS):
+    if evaluation_pick.value is None:
+        _view = mo.md("Choose a recorded run above to replay its plan, including failed attempts.")
+    else:
+        _record = evaluation_df[evaluation_df.run_id == evaluation_pick.value].iloc[0].to_dict()
+        _world = bp.World(evaluation_world(_record))
+        _plan = _record["plan"]
+        _verdict = _world.act(_plan)
+        _widget = mo.ui.anywidget(_world)
+        _status = "✅ solved" if _record["solved"] else "❌ failed"
+        _views = [
+            mo.md(f"### {EVALUATION_METHODS[_record['method_label']]} · {_record['cols']}×{_record['rows']} · {_status}"),
+            mo.md(f"World seed **{_record['world_seed']}** · {len(_plan)} actions · "
+                  f"{_record['wall_time_s']:.1f} s · {_record['output_tokens']:,} output tokens. "
+                  + ("Press **Run** in the scene to watch the recorded plan." if _plan else "No actions were recorded; inspect the model output below.")),
+            _widget,
+            mo.accordion({"Recorded plan and model output": mo.vstack([
+                mo.md("```json\n" + json.dumps(_plan, indent=2) + "\n```"),
+                mo.Html('<pre style="white-space:pre-wrap;max-height:320px;overflow:auto">'
+                        + html.escape(_record.get("raw_output") or "No output was recorded.") + '</pre>'),
+            ])}),
+        ]
+        if bool(_verdict["success"]) != bool(_record["solved"]):
+            _views.insert(1, mo.callout(mo.md("Today's replay verdict differs from the recorded result; the charts retain the original score."), kind="warn"))
+        _view = mo.vstack(_views)
+    _view
+    return
+
+
+@app.cell(hide_code=True)
+def evaluation_takeaway(evaluation_df):
+    _code = evaluation_df[evaluation_df.method_label == "code"]
+    _loop = evaluation_df[evaluation_df.method_label == "code_fb"]
+    _direct = evaluation_df[evaluation_df.method_label == "plan_nothink"]
+    _thinking = evaluation_df[evaluation_df.method_label == "plan_think"]
+    mo.md(f"""
+    ### The verdict from this experiment
+
+    - Direct planning solved **{int(_direct.solved.sum())}/{len(_direct)}** recorded worlds without
+      thinking and **{int(_thinking.solved.sum())}/{len(_thinking)}** with thinking.
+    - Writing a planner solved **{int(_code.solved.sum())}/{len(_code)}**;
+      adding verifier feedback solved **{int(_loop.solved.sum())}/{len(_loop)}**.
+    - Compare the success curve with the time and token cost. A stronger harness
+      can change the outcome without changing the model's weights.
+
+    These results describe this recorded Gemma experiment, not every model or
+    harness. Our W&B demo uses a different inference service and execution setup;
+    measuring it on the same worlds is the next experiment.
+    """)
+    return
+
 
 
 if __name__ == "__main__":

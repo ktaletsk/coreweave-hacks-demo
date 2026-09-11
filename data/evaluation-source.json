@@ -1,0 +1,17 @@
+{
+  "source_dataset": "orbrx/wanderland-llm-planning",
+  "source_revision": "be5cf953b11f36ad0a4a1149b2769e51aed32b81",
+  "source_url": "https://huggingface.co/datasets/orbrx/wanderland-llm-planning/resolve/be5cf953b11f36ad0a4a1149b2769e51aed32b81/data/train-00000-of-00001.parquet",
+  "row_count": 270,
+  "experiment": "original-local-gemma",
+  "model_id": [
+    "google/gemma-4-31B-it"
+  ],
+  "hardware": [
+    "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+  ],
+  "note": "Historical local inference; timing does not measure W&B Inference or CoreWeave Sandboxes.",
+  "artifact_ref": "wandb/servless-sandbox-tutorial/can-llms-plan-original-results:v0",
+  "run_url": "https://wandb.ai/wandb/servless-sandbox-tutorial/runs/planning-import-be5cf953b11f",
+  "source_file_sha256": "4f613d5678be57c003cd0dab880f1e372dcc28901ea3417d3f4790f36c88bf5c"
+}
