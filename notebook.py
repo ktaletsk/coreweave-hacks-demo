@@ -2000,5 +2000,108 @@ def evaluation_takeaway(evaluation_df):
 
 
 
+@app.cell(hide_code=True)
+def builders_inspiration():
+    # Closing slide: allow about 30–45 seconds for the three examples.
+    # Vals describes marimo experiment ledgers and embedded research explainers:
+    # https://www.vals.ai/benchmarks/rsi_index
+    # Lemma describes interactive notebook reports: https://axiomatic.ai/lemma/
+    # The presenter supplied the marimo integration details for Lemma and W&B Robotics.
+    mo.Html(r"""
+    <style>
+    .cw-builders[role="region"] {
+      box-sizing: border-box; container-type: inline-size;
+      width: 100%; max-width: 1440px; margin: 8px auto 16px; padding: 24px;
+      border: 1px solid #202623; border-radius: 10px;
+      background: #fff; color: #202623; box-shadow: -6px 6px 0 #56b5a7;
+      font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.4;
+    }
+    .cw-builders * {box-sizing: border-box;}
+    .cw-builders .cw-builders-brand {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; color: #53615b; font-size: 13px;
+    }
+    .cw-builders .cw-builders-logo {width: 136px; height: 32px; object-fit: contain;}
+    .cw-builders h2 {
+      margin: 14px 0 8px; padding: 0; border: 0; color: #202623;
+      font-size: clamp(26px, 3.2cqw, 44px); line-height: 1.15; font-weight: 750;
+    }
+    .cw-builders .cw-builders-subtitle {margin: 0 0 16px; color: #53615b; font-size: 15px;}
+    .cw-builders .cw-builders-grid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;}
+    .cw-builders .cw-builders-card {
+      display: flex; flex-direction: column; min-width: 0; padding: 16px;
+      border: 1px solid #c6dbd1; border-radius: 8px; background: #f8fbf9;
+      box-shadow: -3px 3px 0 #bfe4d9; text-align: left;
+    }
+    .cw-builders .cw-builders-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; margin-bottom: 10px;
+      border-radius: 10px; background: #e0f2e9; color: #087e73;
+    }
+    .cw-builders .cw-builders-icon svg {display: block; width: 24px; height: 24px;}
+    .cw-builders .cw-builders-role {color: #087e73; font-size: 12px; font-weight: 650;}
+    .cw-builders h3 {margin: 5px 0 10px; padding: 0; color: #202623; font-size: 21px; line-height: 1.2; font-weight: 700;}
+    .cw-builders .cw-builders-card p {margin: 0 0 18px; color: #43534b; font-size: 15px;}
+    .cw-builders a {color: #087e73; text-decoration: underline; text-underline-offset: 3px;}
+    .cw-builders .cw-builders-card a {margin-top: auto; font-size: 13px; font-weight: 600;}
+    .cw-builders a:focus-visible {outline: 2px solid #087e73; outline-offset: 4px;}
+    .cw-builders .cw-builders-prompt {
+      margin: 18px 0 0; padding: 12px 16px; border-radius: 7px;
+      background: #e8f6ef; color: #245244; font-size: 16px;
+    }
+    @container (min-width: 900px) {
+      .cw-builders .cw-builders-brand {font-size: 16px;}
+      .cw-builders .cw-builders-subtitle {font-size: 20px;}
+      .cw-builders .cw-builders-role, .cw-builders .cw-builders-card a {font-size: 16px;}
+      .cw-builders h3 {font-size: 27px;}
+      .cw-builders .cw-builders-card p {font-size: 18px;}
+      .cw-builders .cw-builders-prompt {font-size: 20px;}
+    }
+    @container (max-width: 560px) {
+      .cw-builders .cw-builders-grid {grid-template-columns: 1fr;}
+    }
+    </style>
+    <div class="cw-builders" role="region" aria-label="Inspiration for builders">
+      <div class="cw-builders-brand">
+        <img class="cw-builders-logo" src="https://marimo.io/logotype-wide.svg" alt="marimo" width="136" height="32">
+        <span>Inspiration for builders</span>
+      </div>
+      <h2>Build the notebook into the product.</h2>
+      <p class="cw-builders-subtitle">Three ways companies make marimo part of the user experience.</p>
+      <div class="cw-builders-grid">
+        <div class="cw-builders-card">
+          <div class="cw-builders-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg>
+          </div>
+          <span class="cw-builders-role">Research record</span>
+          <h3>Vals · RSI Index</h3>
+          <p>Agents record experiments in marimo. Vals publishes interactive notebooks that make their research inspectable.</p>
+          <a href="https://www.vals.ai/benchmarks/rsi_index" target="_blank" rel="noopener noreferrer">Explore the research <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="cw-builders-card">
+          <div class="cw-builders-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-6 10a1.3 1.3 0 0 0 1.1 2h13.8a1.3 1.3 0 0 0 1.1-2L14 9V3M7 15h10"/><path d="M10 18h.01M14 17h.01"/></svg>
+          </div>
+          <span class="cw-builders-role">Agent output</span>
+          <h3>Axiomatic AI · Lemma</h3>
+          <p>The agent delivers science and engineering work as marimo notebooks, with code, plots, and results to explore.</p>
+          <a href="https://lemma.axiomatic.ai/" target="_blank" rel="noopener noreferrer">Try Lemma <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="cw-builders-card">
+          <div class="cw-builders-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M2 11v5M22 11v5M9 16h6"/><circle cx="8.5" cy="11.5" r=".7" fill="currentColor"/><circle cx="15.5" cy="11.5" r=".7" fill="currentColor"/></svg>
+          </div>
+          <span class="cw-builders-role">Embedded learning</span>
+          <h3>W&amp;B Robotics</h3>
+          <p>Educational marimo notebooks live inside the robotics platform, so users learn by running code.</p>
+          <a href="https://wandb.ai/site/solutions/physical-ai/" target="_blank" rel="noopener noreferrer">Explore W&amp;B Physical AI <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <p class="cw-builders-prompt"><strong>Your hack:</strong> give your agent a notebook people can inspect, rerun, and extend.</p>
+    </div>
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
