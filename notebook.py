@@ -2143,6 +2143,10 @@ def builders_inspiration():
     # Lemma describes interactive notebook reports: https://axiomatic.ai/lemma/
     # Product screenshots supplied by the presenter; originals are stored in assets/.
     # AI Side Quest: https://site.wandb.ai/ai-sidequest/
+    # Official company logo sources (copies in assets/):
+    # https://www.vals.ai/favicon-dark.svg
+    # https://axiomatic.ai/favicon.svg
+    # https://site.wandb.ai/wp-content/uploads/2024/07/cropped-favicon-3.png?w=192
     mo.Html(r"""
     <style>
     .cw-builders[role="region"] {
@@ -2177,7 +2181,8 @@ def builders_inspiration():
       object-fit: contain;
     }
     .cw-builders .cw-builders-role {color: #087e73; font-size: 12px; font-weight: 650;}
-    .cw-builders h3 {margin: 5px 0 10px; padding: 0; color: #202623; font-size: 21px; line-height: 1.2; font-weight: 700;}
+    .cw-builders h3 {display: flex; align-items: center; gap: 8px; margin: 5px 0 10px; padding: 0; color: #202623; font-size: 21px; line-height: 1.2; font-weight: 700;}
+    .cw-builders .cw-builders-company-logo {display: block; flex: 0 0 28px; width: 28px; height: 28px; object-fit: contain;}
     .cw-builders .cw-builders-card p {margin: 0 0 12px; color: #43534b; font-size: 15px;}
     .cw-builders a {color: #087e73; text-decoration: underline; text-underline-offset: 3px;}
     .cw-builders .cw-builders-card .cw-builders-product-link {margin-top: auto; font-size: 13px; font-weight: 600;}
@@ -2206,7 +2211,7 @@ def builders_inspiration():
       <div class="cw-builders-grid">
         <div class="cw-builders-card">
           <span class="cw-builders-role">Research record</span>
-          <h3>Vals · RSI Index</h3>
+          <h3><img class="cw-builders-company-logo" src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/vals-logo.svg" width="28" height="28" alt="" aria-hidden="true"><span>Vals · RSI Index</span></h3>
           <a class="cw-builders-screenshot" href="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/vals-rsi-index.png"
              target="_blank" rel="noopener noreferrer" aria-label="Open full-size Vals · RSI Index screenshot" title="Open full-size screenshot">
             <img src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/vals-rsi-index.png" width="2312" height="2042" alt="Vals RSI Index embeds a marimo research notebook beneath its Experiment Ledgers and model selectors.">
@@ -2216,7 +2221,7 @@ def builders_inspiration():
         </div>
         <div class="cw-builders-card">
           <span class="cw-builders-role">Agent output</span>
-          <h3>Axiomatic AI · Lemma</h3>
+          <h3><img class="cw-builders-company-logo" src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/axiomatic-logo.svg" width="28" height="28" alt="" aria-hidden="true"><span>Axiomatic AI · Lemma</span></h3>
           <a class="cw-builders-screenshot" href="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/axiomatic-lemma.png"
              target="_blank" rel="noopener noreferrer" aria-label="Open full-size Axiomatic AI · Lemma screenshot" title="Open full-size screenshot">
             <img src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/axiomatic-lemma.png" width="3342" height="2074" alt="Lemma displays an agent conversation alongside an interactive marimo notebook with water-softener simulation controls and a plot.">
@@ -2226,7 +2231,7 @@ def builders_inspiration():
         </div>
         <div class="cw-builders-card">
           <span class="cw-builders-role">Embedded learning</span>
-          <h3>W&amp;B · AI Side Quest</h3>
+          <h3><img class="cw-builders-company-logo" src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/wandb-logo.png" width="28" height="28" alt="" aria-hidden="true"><span>W&amp;B · AI Side Quest</span></h3>
           <a class="cw-builders-screenshot" href="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/wandb-ai-sidequest.png"
              target="_blank" rel="noopener noreferrer" aria-label="Open full-size W&amp;B · AI Side Quest screenshot" title="Open full-size screenshot">
             <img src="https://raw.githubusercontent.com/ktaletsk/coreweave-hacks-demo/main/assets/wandb-ai-sidequest.png" width="3342" height="2074" alt="W&B AI Side Quest embeds a marimo robotics training console with controls for rewards, mission, robot, and training settings.">
