@@ -64,6 +64,44 @@ def intro():
 
 
 @app.cell(hide_code=True)
+def marimo_introduction():
+    # About 15 seconds. Marketing headline and logo: https://marimo.io/
+    mo.Html(r"""
+    <style>
+    .cw-marimo-intro[role="region"] {
+      box-sizing: border-box; container-type: inline-size; width: 100%; max-width: 1440px;
+      margin: 8px auto 16px; padding: 32px; border: 1px solid #202623; border-radius: 10px;
+      background: #fff; color: #202623; box-shadow: -6px 6px 0 #56b5a7;
+      font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.4;
+      background-image: linear-gradient(#eef4f1 1px, transparent 1px), linear-gradient(90deg, #eef4f1 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .cw-marimo-intro * {box-sizing: border-box;}
+    .cw-marimo-intro .cw-intro-logo {display: block; width: clamp(180px, 24cqw, 290px); height: auto; margin: 0 0 20px;}
+    .cw-marimo-intro h2 {margin: 0 0 20px; padding: 0; border: 0; color: #202623; font-size: clamp(34px, 5.3cqw, 68px); line-height: 1.08; font-weight: 750;}
+    .cw-marimo-intro h2 span {color: #09988b;}
+    .cw-marimo-intro p {margin: 0 0 20px; max-width: 46em; font-size: clamp(17px, 2.1cqw, 27px); color: #43534b;}
+    .cw-marimo-intro .cw-intro-links {display: flex; align-items: center; flex-wrap: wrap; gap: 18px; font-size: clamp(14px, 1.7cqw, 20px);}
+    .cw-marimo-intro a {color: #087e73; text-underline-offset: 3px;}
+    .cw-marimo-intro .cw-intro-oss {padding: 8px 14px; border: 1px solid #c6dbd1; border-radius: 7px; background: #e8f6ef; color: #245244; font-weight: 650;}
+    .cw-marimo-intro a:focus-visible {outline: 2px solid #087e73; outline-offset: 4px;}
+    </style>
+    <div class="cw-marimo-intro" role="region" aria-label="Introducing marimo">
+      <img class="cw-intro-logo" src="https://marimo.io/logotype-wide.svg" alt="marimo" width="306" height="102">
+      <h2>The future of Python<br>notebooks <span>is here.</span></h2>
+      <p>An <strong>open-source Python notebook</strong> for exploring data, building models, and sharing what you learn.</p>
+      <p>One Python file becomes a notebook, a script, an app, or a slide deck.</p>
+      <div class="cw-intro-links">
+        <span class="cw-intro-oss">Open source · built with the community</span>
+        <a href="https://github.com/marimo-team/marimo" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a href="https://marimo.io/" target="_blank" rel="noopener noreferrer">marimo.io ↗</a>
+      </div>
+    </div>
+    """)
+    return
+
+
+@app.cell(hide_code=True)
 def marimo_overview():
     # Opening slide: approximately 45–60 seconds.
     # Adapted from marimo-team/talks: 25-07-11-scipy (Python files and packaging)
@@ -199,6 +237,103 @@ def marimo_overview():
     </div>
     """)
     return
+
+@app.cell(hide_code=True)
+def molab_introduction():
+    # About 20 seconds. GPU specifications and reasonable-use qualifier:
+    # https://marimo.io/blog/reintroducing-molab (June 1, 2026).
+    # Recording is the announcement's original "attach a GPU" screencast.
+    mo.Html(r"""
+    <style>
+    .cw-molab-intro[role="region"] {
+      box-sizing: border-box; container-type: inline-size; width: 100%; max-width: 1440px;
+      margin: 8px auto 16px; padding: 28px; border: 1px solid #202623; border-radius: 10px;
+      background: #fff; color: #202623; box-shadow: -6px 6px 0 #56b5a7;
+      font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.4;
+    }
+    .cw-molab-intro * {box-sizing: border-box;}
+    .cw-molab-intro .cw-molab-heading {display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;}
+    .cw-molab-intro h2 {margin: 0; padding: 0; border: 0; font-size: clamp(34px, 4.5cqw, 58px); font-weight: 750; color: #202623;}
+    .cw-molab-intro h2 span {color: #09988b;}
+    .cw-molab-intro .cw-molab-kicker {font-size: clamp(15px, 1.7cqw, 21px); color: #53615b;}
+    .cw-molab-intro .cw-molab-grid {display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 26px; align-items: center;}
+    .cw-molab-intro .cw-molab-free {display: inline-block; margin-bottom: 10px; padding: 5px 10px; border-radius: 5px; background: #e8f6ef; color: #087e73; font-size: 15px; font-weight: 700;}
+    .cw-molab-intro h3 {margin: 0 0 12px; padding: 0; font-size: clamp(25px, 3cqw, 40px); line-height: 1.12; color: #202623;}
+    .cw-molab-intro .cw-molab-memory {margin: 0 0 12px; color: #087e73; font-size: clamp(28px, 4cqw, 52px); font-weight: 750;}
+    .cw-molab-intro .cw-molab-memory span {font-size: 0.48em; color: #53615b; font-weight: 500;}
+    .cw-molab-intro p {margin: 0; font-size: clamp(16px, 1.9cqw, 23px); color: #43534b;}
+    .cw-molab-intro figure {min-width: 0; margin: 0;}
+    .cw-molab-intro video {display: block; width: 100%; aspect-ratio: 16/9; object-fit: contain; border: 1px solid #c6dbd1; border-radius: 7px; background: #f8fbf9;}
+    .cw-molab-intro figcaption {margin-top: 8px; font-size: 13px; color: #53615b; text-align: center;}
+    .cw-molab-intro .cw-molab-footer {display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px 18px; border-top: 1px solid #dce5df; margin-top: 22px; padding-top: 14px; font-size: clamp(13px, 1.4cqw, 18px); color: #53615b;}
+    .cw-molab-intro a {color: #087e73; text-underline-offset: 3px;}
+    .cw-molab-intro a:focus-visible {outline: 2px solid #087e73; outline-offset: 4px;}
+    @container (max-width: 560px) {.cw-molab-intro .cw-molab-grid {grid-template-columns: 1fr;}}
+    </style>
+    <div class="cw-molab-intro" role="region" aria-label="Introducing molab">
+      <div class="cw-molab-heading">
+        <h2><span>mo</span>lab</h2><span class="cw-molab-kicker">marimo in your browser · powered by CoreWeave</span>
+      </div>
+      <div class="cw-molab-grid">
+        <div>
+          <span class="cw-molab-free">FREE GPU ACCESS</span>
+          <h3>NVIDIA RTX Pro 6000<br>Blackwell</h3>
+          <div class="cw-molab-memory">96 GB <span>VRAM</span></div>
+          <p>Attach a GPU to your notebook.<br>Fine-tune models, run experiments, and share the result.</p>
+        </div>
+        <figure>
+          <video controls muted loop playsinline preload="metadata" aria-label="Attach a GPU to a molab notebook">
+            <source src="https://marimo.io/images/blog/53/molab-attach-gpu.mp4" type="video/mp4">
+            <a href="https://marimo.io/images/blog/53/molab-attach-gpu.mp4">Watch the GPU demo</a>
+          </video>
+          <figcaption>Attach a GPU from the notebook’s compute settings.</figcaption>
+        </figure>
+      </div>
+      <div class="cw-molab-footer">
+        <span>Free during public preview, with reasonable usage.</span>
+        <a href="https://molab.marimo.io/notebooks" target="_blank" rel="noopener noreferrer">Open molab ↗</a>
+        <a href="https://marimo.io/blog/reintroducing-molab" target="_blank" rel="noopener noreferrer">GPU announcement ↗</a>
+      </div>
+    </div>
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def marimo_pair_introduction():
+    # About 20 seconds: play an excerpt while introducing the shared notebook.
+    # Original homepage "Pair with AI" screencast, video + poster:
+    # apps/web/components/marketing/gif-carousel.tsx in marimo-cloud.
+    mo.Html(r"""
+    <style>
+    .cw-pair-intro[role="region"] {
+      box-sizing: border-box; container-type: inline-size; width: 100%; max-width: 1440px;
+      margin: 8px auto 16px; padding: 18px 24px; border: 1px solid #202623; border-radius: 10px;
+      background: #fff; color: #202623; box-shadow: -6px 6px 0 #56b5a7;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .cw-pair-intro .cw-pair-heading {display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px;}
+    .cw-pair-intro h2 {margin: 0; padding: 0; border: 0; font-size: clamp(26px, 3cqw, 40px); font-weight: 750; color: #202623;}
+    .cw-pair-intro h2 span {color: #09988b;}
+    .cw-pair-intro a {color: #087e73; font-size: 15px; text-underline-offset: 3px;}
+    .cw-pair-intro a:focus-visible {outline: 2px solid #087e73; outline-offset: 4px;}
+    .cw-pair-intro video {display: block; width: 100%; height: clamp(280px, 39cqw, 460px); object-fit: contain; border: 1px solid #c6dbd1; border-radius: 7px; background: #f8fbf9;}
+    </style>
+    <div class="cw-pair-intro" role="region" aria-label="Introducing marimo pair">
+      <div class="cw-pair-heading">
+        <h2>marimo <span>pair</span></h2>
+        <a href="https://marimo.io/pair" target="_blank" rel="noopener noreferrer">Pair with your agent ↗</a>
+      </div>
+      <video controls muted loop playsinline preload="metadata"
+             poster="https://cms.marimo.io/landing/marimo-pair-poster.jpg"
+             aria-label="marimo pair screen recording from the marimo website">
+        <source src="https://cms.marimo.io/landing/marimo-pair.mp4" type="video/mp4">
+        <a href="https://cms.marimo.io/landing/marimo-pair.mp4">Watch the marimo pair screen recording</a>
+      </video>
+    </div>
+    """)
+    return
+
 
 @app.cell(hide_code=True)
 def marimo_widgets_feature():
